@@ -44,8 +44,8 @@ const FEATURES = [
         <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
       </svg>
     ),
-    title: "Agendamento Inteligente",
-    desc: "Seus clientes agendam pelo app 24/7. Sem ligações, sem confusão. Agenda preenchida automaticamente.",
+    title: "Agenda no Piloto Automático",
+    desc: "Clientes agendam 24h pelo app, sem você precisar responder mensagem. Chega de WhatsApp lotado de horário.",
   },
   {
     icon: (
@@ -54,8 +54,8 @@ const FEATURES = [
         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
       </svg>
     ),
-    title: "Controle Financeiro",
-    desc: "Receitas, despesas e comissões em tempo real. Saiba exatamente quanto cada barbeiro gera.",
+    title: "Saiba onde vai cada real",
+    desc: "Receitas, despesas e comissões na tela em tempo real. Nunca mais fechar o mês sem saber se lucrou.",
   },
   {
     icon: (
@@ -63,8 +63,8 @@ const FEATURES = [
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       </svg>
     ),
-    title: "Gamificação de Clientes",
-    desc: "Pontos, recompensas e desafios que fazem seus clientes voltarem mais rápido e com mais frequência.",
+    title: "Clientes que voltam por vontade",
+    desc: "Pontos, recompensas e rankings que criam um hábito. Seu cliente vai querer voltar antes de você ligar.",
   },
   {
     icon: (
@@ -75,8 +75,8 @@ const FEATURES = [
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
-    title: "Gestão de Equipe",
-    desc: "Barbeiros, serviços, produtos e comissões — tudo organizado, tudo no seu controle.",
+    title: "Sua equipe, seu controle",
+    desc: "Cada barbeiro com sua agenda, seus serviços e suas comissões calculadas automaticamente.",
   },
 ];
 
@@ -114,7 +114,7 @@ const PLANS = [
       "App para clientes",
       "Suporte por e-mail",
     ],
-    cta: "Começar Grátis",
+    cta: "Começar Grátis — Sem Cartão",
   },
   {
     name: "Basic",
@@ -130,7 +130,7 @@ const PLANS = [
       "Relatórios mensais",
       "Suporte prioritário",
     ],
-    cta: "Assinar Basic",
+    cta: "Quero o Basic",
   },
   {
     name: "Pro",
@@ -146,7 +146,7 @@ const PLANS = [
       "API & Integrações",
       "Suporte 24/7",
     ],
-    cta: "Assinar Pro",
+    cta: "Quero o Pro",
   },
 ];
 
@@ -913,9 +913,9 @@ export default function LandingPage() {
                 marginBottom: "1.5rem",
               }}
             >
-              Gerencie tudo.<br />
-              Fidelize clientes.<br />
-              <span className="gold-shimmer">Escale seu lucro.</span>
+              Sua barbearia lotada.<br />
+              Seus clientes voltando.<br />
+              <span className="gold-shimmer">Seu lucro no controle.</span>
             </h1>
 
             {/* Subtext */}
@@ -931,15 +931,15 @@ export default function LandingPage() {
                 marginBottom: "2rem",
               }}
             >
-              BarberXP é a plataforma completa para barbearias que querem sair do caos e entrar no próximo nível — agendamentos online, controle financeiro e gamificação de clientes, tudo num só lugar.
+              Do agendamento ao financeiro, do primeiro corte à fidelização — uma ferramenta só, sem complicação. Feita para barbearias que querem crescer de verdade.
             </p>
 
             {/* Benefits */}
             <ul className="anim-fade-up delay-400" style={{ listStyle: "none", marginBottom: "2.5rem" }}>
               {[
-                "Agenda preenchida automaticamente, 24h por dia",
-                "Veja quanto cada barbeiro gera em tempo real",
-                "Clientes que voltam — com pontos e recompensas",
+                "Clientes agendam sozinhos — você só corta",
+                "Saiba exatamente quanto cada barbeiro gera",
+                "Pontos e recompensas que fazem clientes voltarem",
               ].map((b) => (
                 <li key={b} className="check-item" style={{ marginBottom: 12, fontSize: "0.88rem" }}>{b}</li>
               ))}
@@ -960,13 +960,13 @@ export default function LandingPage() {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
-                Conversar no WhatsApp
+                Falar com a gente agora
               </a>
 
               {/* Começar Grátis */}
               <div className="ping-wrapper">
                 <Link href="https://app.barberxp.com.br/auth/login" className="btn-gold">
-                  Começar Grátis
+                  Testar 30 Dias Grátis
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
                   </svg>
@@ -976,7 +976,7 @@ export default function LandingPage() {
 
             {/* Social proof micro-text */}
             <p className="anim-fade-in delay-700" style={{ marginTop: "1.5rem", color: "#52525B", fontSize: "0.75rem", fontFamily: "var(--font-syne)", letterSpacing: "0.04em" }}>
-              Sem cartão de crédito &nbsp;·&nbsp; Setup em 2 minutos &nbsp;·&nbsp; Cancele quando quiser
+              Sem cartão de crédito &nbsp;·&nbsp; Pronto em 2 minutos &nbsp;·&nbsp; Cancele quando quiser
             </p>
           </div>
 
