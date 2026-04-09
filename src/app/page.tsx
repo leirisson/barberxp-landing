@@ -159,7 +159,6 @@ const BANNER_MESSAGES = [
 export default function LandingPage() {
   const statsRef = useRef<HTMLDivElement>(null);
   const [statsOn, setStatsOn] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [bannerVisible, setBannerVisible] = useState(true);
   const [bannerIdx, setBannerIdx] = useState(0);
@@ -931,7 +930,7 @@ export default function LandingPage() {
                 marginBottom: "2rem",
               }}
             >
-              Do agendamento ao financeiro, do primeiro corte à fidelização — uma ferramenta só, sem complicação. Feita para barbearias que querem crescer de verdade.
+              Um app pra comissão. Outro pro estoque. O caderno pro financeiro. E no fim do dia, o dono ainda precisa resolver tudo sozinho. O BarberXP nasceu pra acabar com isso — tudo num lugar só.
             </p>
 
             {/* Benefits */}
