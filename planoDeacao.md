@@ -32,18 +32,65 @@
 
 **Meta:** contatar 30 barbearias para fechar 5-10.
 
-**Script WhatsApp:**
+### Mensagem principal
 ```
-Olá [Nome]! Vi sua barbearia no Instagram/Maps.
+Oi [Nome], tudo bem?
 
-Estou lançando o BarberXP, um sistema de gestão para 
-barbearias com agendamento online e fidelização de 
-clientes por pontos e recompensas.
+Vi sua barbearia no [Instagram/Maps] e queria 
+te fazer uma pergunta rápida:
 
-Estou selecionando 10 barbearias em Manaus para testar 
-gratuitamente por 1 mês com acesso completo.
+Você usa quantos apps diferentes pra gerenciar 
+sua barbearia hoje?
 
-Posso te mostrar como funciona em 10 minutos?
+A maioria que converso usa um pro agendamento, 
+outro pras comissões dos barbeiros, outro pro 
+estoque — e o financeiro ainda no caderno.
+
+Criei o BarberXP exatamente por causa disso.
+Tudo num lugar só: agendamento, financeiro, 
+estoque, comissões e ainda um sistema de pontos 
+que faz seus clientes voltarem sem você precisar 
+fazer nada.
+
+Tô selecionando 10 barbearias em Manaus pra 
+testar de graça por 1 mês, acesso completo.
+
+Posso te mostrar em 10 minutos?
+```
+
+### Versão curta (DM no Instagram)
+```
+Oi [Nome]!
+
+Você usa quantos apps pra gerenciar sua barbearia?
+
+Criei o BarberXP pra unificar tudo — agendamento, 
+comissões, estoque e fidelização de clientes 
+num só lugar.
+
+1 mês grátis pra barbearias em Manaus.
+Posso te contar mais?
+```
+
+### Follow-up (2 dias sem resposta)
+```
+Oi [Nome], só passando pra ver se recebeu.
+
+Se quiser, mando um vídeo de 1 minuto 
+mostrando o sistema funcionando.
+
+Sem compromisso.
+```
+
+### Após demonstração — Para fechar o teste
+```
+Oi [Nome], foi bom conversar contigo.
+
+Pra ativar o seu 1 mês grátis é simples:
+me passa o nome da barbearia e eu configuro 
+tudo pra você ainda hoje.
+
+Quando quiser começar é só falar.
 ```
 
 ---
