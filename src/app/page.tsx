@@ -94,55 +94,21 @@ const TESTIMONIALS = [
   },
 ];
 
-const PLANS = [
-  {
-    name: "Free",
-    price: "R$ 0",
-    sub: "para sempre",
-    highlight: false,
-    features: [
-      "Até 2 barbeiros",
-      "100 agendamentos/mês",
-      "Controle financeiro básico",
-      "App para clientes",
-      "Suporte por e-mail",
-    ],
-    cta: "Começar Grátis — Sem Cartão",
-  },
-  {
-    name: "Basic",
-    price: "R$ 97",
-    sub: "por mês",
-    highlight: true,
-    badge: "Mais popular",
-    features: [
-      "Até 5 barbeiros",
-      "Agendamentos ilimitados",
-      "Controle financeiro completo",
-      "Comissões automáticas",
-      "Gamificação de clientes",
-      "Relatórios mensais",
-      "Suporte prioritário",
-    ],
-    cta: "Quero o Basic",
-  },
-  {
-    name: "Pro",
-    price: "R$ 197",
-    sub: "por mês",
-    highlight: false,
-    features: [
-      "Barbeiros ilimitados",
-      "Agendamentos ilimitados",
-      "Gamificação completa",
-      "Relatórios avançados",
-      "Multi-unidade",
-      "API & Integrações",
-      "Suporte 24/7",
-    ],
-    cta: "Quero o Pro",
-  },
-];
+const PLAN = {
+  price: "R$ 150",
+  sub: "por mês",
+  features: [
+    "Barbeiros ilimitados",
+    "Agendamentos ilimitados",
+    "Controle financeiro completo",
+    "Comissões automáticas",
+    "Gamificação de clientes (XP, rankings, recompensas)",
+    "App para clientes",
+    "Relatórios em tempo real",
+    "Suporte prioritário",
+  ],
+  cta: "Começar Agora",
+};
 
 const BANNER_MESSAGES = [
   { icon: "🔥", text: "Oferta por tempo limitado:", highlight: "30 dias grátis no plano Basic", cta: "Ativar agora" },
@@ -877,36 +843,32 @@ export default function LandingPage() {
 
       {/* ── PRICING ───────────────────────────────────────────────────── */}
       <section id="planos" style={{ padding: "80px clamp(1.5rem,5vw,4rem) 100px", background: "#111" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ marginBottom: "3.5rem" }}>
-            <div className="section-label">Planos</div>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ marginBottom: "3.5rem", textAlign: "center" }}>
+            <div className="section-label" style={{ justifyContent: "center" }}>Plano</div>
             <h2 className="display-font" style={{ fontSize: "clamp(2.5rem,5vw,3.8rem)", fontWeight: 600, letterSpacing: "-0.01em", lineHeight: 1.1 }}>
-              Escolha o plano <em style={{ color: "#C89B3C", fontStyle: "italic" }}>certo para você.</em>
+              Simples assim. <em style={{ color: "#C89B3C", fontStyle: "italic" }}>Um plano, tudo incluso.</em>
             </h2>
           </div>
-          <div className="plans-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1.25rem", alignItems: "start" }}>
-            {PLANS.map((p) => (
-              <div key={p.name} className={`plan-card ${p.highlight ? "highlighted" : ""}`}>
-                {p.highlight && p.badge && (
-                  <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)" }}>
-                    <span className="gold-badge">{p.badge}</span>
-                  </div>
-                )}
-                <div style={{ marginBottom: "1.5rem" }}>
-                  <div style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#A1A1AA", marginBottom: "0.75rem" }}>{p.name}</div>
-                  <div className="display-font" style={{ fontSize: "3rem", fontWeight: 700, lineHeight: 1, color: p.highlight ? "#C89B3C" : "#fff" }}>{p.price}</div>
-                  <div style={{ color: "#A1A1AA", fontSize: "0.8rem", marginTop: "0.3rem" }}>{p.sub}</div>
-                </div>
-                <hr className="gold-rule" style={{ marginBottom: "1.5rem", opacity: 0.3 }} />
-                <ul style={{ listStyle: "none", marginBottom: "2rem" }}>
-                  {p.features.map((f) => <li key={f} className="check-item">{f}</li>)}
-                </ul>
-                <Link href="https://app.barberxp.com.br/auth/login" style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: 12, fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "0.8rem", letterSpacing: "0.06em", textTransform: "uppercase", textDecoration: "none", transition: "all 0.25s ease", ...(p.highlight ? { background: "linear-gradient(135deg,#C89B3C,#F5D17E 50%,#C89B3C)", color: "#0F0F0F", boxShadow: "0 8px 30px rgba(200,155,60,0.3)" } : { background: "transparent", color: "#C89B3C", border: "1.5px solid rgba(200,155,60,0.4)" }) }}
-                  onMouseEnter={e => !p.highlight && (e.currentTarget.style.background = "rgba(200,155,60,0.08)")}
-                  onMouseLeave={e => !p.highlight && (e.currentTarget.style.background = "transparent")}
-                >{p.cta}</Link>
-              </div>
-            ))}
+          <div className="plan-card highlighted" style={{ maxWidth: 520, width: "100%" }}>
+            <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)" }}>
+              <span className="gold-badge">Tudo incluso</span>
+            </div>
+            <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+              <div className="display-font gold-text" style={{ fontSize: "4.5rem", fontWeight: 700, lineHeight: 1 }}>{PLAN.price}</div>
+              <div style={{ color: "#A1A1AA", fontSize: "0.9rem", marginTop: "0.4rem" }}>{PLAN.sub} · cancele quando quiser</div>
+            </div>
+            <hr className="gold-rule" style={{ marginBottom: "1.75rem", opacity: 0.4 }} />
+            <ul style={{ listStyle: "none", marginBottom: "2.25rem" }}>
+              {PLAN.features.map((f) => <li key={f} className="check-item" style={{ marginBottom: 14 }}>{f}</li>)}
+            </ul>
+            <Link href="https://app.barberxp.com.br/auth/login" style={{ display: "block", textAlign: "center", padding: "16px", borderRadius: 12, fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.06em", textTransform: "uppercase", textDecoration: "none", background: "linear-gradient(135deg,#C89B3C,#F5D17E 50%,#C89B3C)", color: "#0F0F0F", boxShadow: "0 8px 30px rgba(200,155,60,0.3)", transition: "box-shadow 0.3s ease, transform 0.2s ease" }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 14px 40px rgba(200,155,60,0.45)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 8px 30px rgba(200,155,60,0.3)"; e.currentTarget.style.transform = "translateY(0)"; }}
+            >{PLAN.cta} →</Link>
+            <p style={{ textAlign: "center", color: "#52525B", fontSize: "0.75rem", marginTop: "1rem", fontFamily: "var(--font-syne)" }}>
+              Sem cartão de crédito para começar &nbsp;·&nbsp; Setup em 2 minutos
+            </p>
           </div>
         </div>
       </section>
