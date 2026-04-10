@@ -687,6 +687,28 @@ export default function LandingPage() {
           </div>
         </div>
 
+        {/* Financeiro + Produto side by side */}
+        <div className="screens-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
+          <div>
+            <div className="screen-frame">
+              <Image src="/assets/financeiro.png" alt="Controle financeiro da barbearia" width={700} height={450} style={{ width: "100%", height: "auto" }} />
+            </div>
+            <div style={{ marginTop: "0.875rem", paddingLeft: "0.5rem" }}>
+              <div style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "0.85rem", color: "#fff", marginBottom: 4 }}>Financeiro</div>
+              <div style={{ color: "#A1A1AA", fontSize: "0.78rem" }}>Receitas, despesas e comissões em tempo real. Nunca mais fechar o mês no escuro.</div>
+            </div>
+          </div>
+          <div>
+            <div className="screen-frame">
+              <Image src="/assets/produto.png" alt="Gestão de produtos da barbearia" width={700} height={450} style={{ width: "100%", height: "auto" }} />
+            </div>
+            <div style={{ marginTop: "0.875rem", paddingLeft: "0.5rem" }}>
+              <div style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "0.85rem", color: "#fff", marginBottom: 4 }}>Produtos</div>
+              <div style={{ color: "#A1A1AA", fontSize: "0.78rem" }}>Estoque e precificação de produtos integrados ao caixa.</div>
+            </div>
+          </div>
+        </div>
+
         {/* App mobile + login side by side */}
         <div className="screens-grid" style={{ display: "grid", gridTemplateColumns: "0.6fr 1.4fr", gap: "1.5rem" }}>
           <div>
