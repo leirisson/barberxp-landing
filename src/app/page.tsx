@@ -34,6 +34,73 @@ function useReveal() {
   return { ref, visible };
 }
 
+/* ─── Mouse parallax hook ────────────────────────────────────── */
+function useMouseParallax(strength = 12) {
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      setPos({
+        x: ((e.clientX - cx) / cx) * strength,
+        y: ((e.clientY - cy) / cy) * strength,
+      });
+    };
+    window.addEventListener("mousemove", handler, { passive: true });
+    return () => window.removeEventListener("mousemove", handler);
+  }, [strength]);
+  return pos;
+}
+
+/* ─── Tilt card ──────────────────────────────────────────────── */
+function TiltFrame({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const raf = useRef<number | null>(null);
+
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width  - 0.5;
+    const y = (e.clientY - r.top)  / r.height - 0.5;
+    if (raf.current) cancelAnimationFrame(raf.current);
+    raf.current = requestAnimationFrame(() => {
+      el.style.transform = `perspective(900px) rotateY(${x * 8}deg) rotateX(${-y * 6}deg) scale(1.02)`;
+      // move shine overlay
+      const shine = el.querySelector<HTMLElement>(".tilt-shine");
+      if (shine) {
+        shine.style.background = `radial-gradient(circle at ${(x+0.5)*100}% ${(y+0.5)*100}%, rgba(245,209,126,0.18) 0%, transparent 65%)`;
+        shine.style.opacity = "1";
+      }
+    });
+  };
+
+  const onLeave = () => {
+    const el = ref.current;
+    if (!el) return;
+    if (raf.current) cancelAnimationFrame(raf.current);
+    raf.current = requestAnimationFrame(() => {
+      el.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)";
+      const shine = el.querySelector<HTMLElement>(".tilt-shine");
+      if (shine) shine.style.opacity = "0";
+    });
+  };
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{ ...style, transition: "transform 0.6s cubic-bezier(0.22,1,0.36,1)", transformStyle: "preserve-3d", willChange: "transform", position: "relative" }}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+    >
+      {/* shine overlay */}
+      <div className="tilt-shine" style={{ position: "absolute", inset: 0, zIndex: 2, borderRadius: "inherit", opacity: 0, pointerEvents: "none", transition: "opacity 0.4s ease" }} aria-hidden />
+      {children}
+    </div>
+  );
+}
+
 /* ─── Animated counter ───────────────────────────────────────── */
 function useCounter(target: number, duration = 2000, active = false) {
   const [value, setValue] = useState(0);
@@ -211,6 +278,7 @@ export default function LandingPage() {
   const [bannerFading, setBannerFading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [testimonialIdx, setTestimonialIdx] = useState(0);
+  const mouse = useMouseParallax(10);
 
   const schedCount = useCounter(2500, 2200, statsOn);
   const shopCount  = useCounter(150,  1800, statsOn);
@@ -371,6 +439,20 @@ export default function LandingPage() {
           border-radius:16px;overflow:hidden;
           border:1px solid rgba(200,155,60,0.18);
           box-shadow:0 40px 100px rgba(0,0,0,0.7),0 0 0 1px rgba(200,155,60,0.06);
+          position:relative;
+        }
+        /* Beam of light sweeping across screens */
+        .screen-frame::after {
+          content:'';
+          position:absolute;inset:0;z-index:3;pointer-events:none;
+          background:linear-gradient(105deg,transparent 35%,rgba(245,209,126,0.09) 50%,transparent 65%);
+          background-size:250% 100%;
+          animation:screen-beam 4s ease-in-out infinite;
+        }
+        @keyframes screen-beam {
+          0%   { background-position:200% 0; }
+          50%  { background-position:-20% 0; }
+          100% { background-position:200% 0; }
         }
 
         /* Float */
@@ -382,6 +464,67 @@ export default function LandingPage() {
           0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:0.85;transform:scale(1.1)}
         }
         .glow-pulse { animation:glow-pulse 6s ease-in-out infinite; }
+
+        /* Gold particles */
+        @keyframes particle-rise {
+          0%   { transform:translateY(0) translateX(0) scale(1); opacity:0.8; }
+          100% { transform:translateY(-120px) translateX(var(--dx,10px)) scale(0); opacity:0; }
+        }
+        .particle {
+          position:absolute;width:3px;height:3px;border-radius:50%;
+          background:var(--gold);pointer-events:none;
+          animation:particle-rise var(--dur,3s) ease-out var(--delay,0s) infinite;
+        }
+
+        /* Spotlight sweep on hero glow */
+        @keyframes spotlight-move {
+          0%,100% { transform:translate(-50%,-50%) scale(1);   opacity:0.6; }
+          33%      { transform:translate(-40%,-55%) scale(1.1); opacity:0.9; }
+          66%      { transform:translate(-55%,-45%) scale(0.9); opacity:0.7; }
+        }
+        .hero-spotlight { animation:spotlight-move 8s ease-in-out infinite; }
+
+        /* Tab image: slide in from side */
+        @keyframes slide-in-right { from{opacity:0;transform:translateX(32px)} to{opacity:1;transform:none} }
+        @keyframes slide-in-left  { from{opacity:0;transform:translateX(-32px)} to{opacity:1;transform:none} }
+        .tab-img-enter  { animation:slide-in-right 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+        .tab-copy-enter { animation:slide-in-left  0.5s cubic-bezier(0.22,1,0.36,1) both; }
+
+        /* Stagger children reveal */
+        .stagger > * { opacity:0; animation:fade-in-up 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+        .stagger > *:nth-child(1) { animation-delay:0s; }
+        .stagger > *:nth-child(2) { animation-delay:0.08s; }
+        .stagger > *:nth-child(3) { animation-delay:0.16s; }
+        .stagger > *:nth-child(4) { animation-delay:0.24s; }
+        .stagger > *:nth-child(5) { animation-delay:0.32s; }
+        .stagger.done > * { opacity:1; }
+
+        /* Underline grow on section titles */
+        .underline-grow {
+          display:inline-block;position:relative;
+        }
+        .underline-grow::after {
+          content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;
+          background:linear-gradient(90deg,#C89B3C,#F5D17E);
+          transition:width 0.6s cubic-bezier(0.22,1,0.36,1);border-radius:2px;
+        }
+        .underline-grow.visible::after { width:100%; }
+
+        /* Progress bar on tabs */
+        .tab-progress {
+          position:absolute;bottom:0;left:0;height:2px;
+          background:linear-gradient(90deg,#C89B3C,#F5D17E);
+          animation:tab-fill 5s linear infinite;
+          border-radius:2px;
+        }
+        @keyframes tab-fill { from{width:0%} to{width:100%} }
+
+        /* Stat number pop */
+        @keyframes stat-pop {
+          0%  { transform:scale(1.3);color:#F5D17E; }
+          100%{ transform:scale(1);  }
+        }
+        .stat-pop { animation:stat-pop 0.5s cubic-bezier(0.22,1,0.36,1) both; }
 
         /* Ping */
         @keyframes ping { 0%{transform:scale(1);opacity:0.7} 70%,100%{transform:scale(1.55);opacity:0} }
@@ -436,6 +579,32 @@ export default function LandingPage() {
 
       <div className="grain" aria-hidden />
 
+      {/* ── FLOATING WHATSAPP BUTTON (always visible) ─────────────── */}
+      <a
+        href="https://wa.me/5511999999999?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20BarberXP"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Falar pelo WhatsApp"
+        style={{
+          position: "fixed", bottom: 28, right: 28, zIndex: 9998,
+          width: 56, height: 56, borderRadius: "50%",
+          background: "linear-gradient(135deg,#1DA851,#25D366)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 8px 28px rgba(37,211,102,0.5)",
+          transition: "transform 0.2s, box-shadow 0.3s",
+          textDecoration: "none",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(37,211,102,0.65)"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(37,211,102,0.5)"; }}
+      >
+        {/* Pulse ring */}
+        <span style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid rgba(37,211,102,0.5)", animation: "ping 2s cubic-bezier(0,0,0.2,1) infinite", pointerEvents: "none" }} aria-hidden />
+        <span style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid rgba(37,211,102,0.3)", animation: "ping 2s cubic-bezier(0,0,0.2,1) 1s infinite", pointerEvents: "none" }} aria-hidden />
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+        </svg>
+      </a>
+
       {/* ── NAV ───────────────────────────────────────────────────────── */}
       <header className={`nav fixed top-0 left-0 right-0 z-50 ${scrolled ? "scrolled" : ""}`} style={{ padding: "0 clamp(1.5rem,5vw,4rem)" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 72 }}>
@@ -489,63 +658,122 @@ export default function LandingPage() {
       {/* ══════════════════════════════════════════════════════════════ */}
       {/* ── HERO ──────────────────────────────────────────────────────── */}
       {/* ══════════════════════════════════════════════════════════════ */}
-      <section className="dot-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", padding: `${topOffset}px clamp(1.5rem,5vw,4rem) 80px`, position: "relative", overflow: "hidden" }}>
+      <section className="dot-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", padding: `${topOffset}px clamp(1.5rem,5vw,4rem) 48px`, position: "relative", overflow: "hidden" }}>
 
-        {/* Radial glow */}
-        <div aria-hidden className="glow-pulse" style={{ position: "absolute", top: "45%", left: "35%", width: "55vw", height: "55vw", maxWidth: 700, maxHeight: 700, background: "radial-gradient(ellipse,rgba(200,155,60,0.07) 0%,transparent 65%)", transform: "translate(-50%,-50%)", pointerEvents: "none" }} />
+        {/* Radial spotlight — animated */}
+        <div aria-hidden className="hero-spotlight" style={{ position: "absolute", top: "50%", left: "38%", width: "60vw", height: "60vw", maxWidth: 750, maxHeight: 750, background: "radial-gradient(ellipse,rgba(200,155,60,0.08) 0%,transparent 65%)", transform: "translate(-50%,-50%)", pointerEvents: "none" }} />
+        {/* Secondary smaller glow */}
+        <div aria-hidden style={{ position: "absolute", top: "30%", right: "10%", width: 300, height: 300, background: "radial-gradient(ellipse,rgba(200,155,60,0.04) 0%,transparent 70%)", pointerEvents: "none", animation:"glow-pulse 9s ease-in-out 2s infinite" }} />
 
         <div className="two-col" style={{ maxWidth: 1240, width: "100%", margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(2rem,5vw,5rem)", alignItems: "center" }}>
 
           {/* Copy */}
           <div>
-            <div className="badge" style={{ marginBottom: "1.75rem" }}>✦ Sistema SaaS para Barbearias</div>
-            <h1 className="d-font" style={{ fontSize: "clamp(2.8rem,4.8vw,5.2rem)", fontWeight: 700, lineHeight: 1.02, letterSpacing: "-0.01em", marginBottom: "1.5rem" }}>
+            <div className="badge" style={{ marginBottom: "1.25rem" }}>✦ Sistema SaaS para Barbearias</div>
+            <h1 className="d-font" style={{ fontSize: "clamp(2.6rem,4.5vw,4.8rem)", fontWeight: 700, lineHeight: 1.04, letterSpacing: "-0.01em", marginBottom: "1rem" }}>
               Sua barbearia lotada.<br />
               Seus clientes voltando.<br />
               <span className="g-shimmer">Seu lucro no controle.</span>
             </h1>
-            <p style={{ maxWidth: 460, fontSize: "clamp(0.9rem,1.4vw,1.05rem)", lineHeight: 1.8, color: "#A1A1AA", marginBottom: "2rem" }}>
-              Um app pra comissão. Outro pro estoque. O caderno pro financeiro. E no fim do dia, o dono ainda resolve tudo sozinho. O BarberXP nasceu pra acabar com isso.
+            <p style={{ maxWidth: 440, fontSize: "clamp(0.88rem,1.3vw,1rem)", lineHeight: 1.7, color: "#A1A1AA", marginBottom: "1.75rem" }}>
+              Agenda, financeiro, comissões e gamificação de clientes — tudo num lugar só. Sem planilha, sem WhatsApp de horário, sem achismo.
             </p>
-            <ul style={{ listStyle: "none", marginBottom: "2.5rem" }}>
-              {["Clientes agendam sozinhos — você só corta", "Saiba exatamente quanto cada barbeiro gera", "Pontos e recompensas que fazem clientes voltarem"].map(b => (
-                <li key={b} className="check-li" style={{ marginBottom: 12 }}>{b}</li>
-              ))}
-            </ul>
-            <div className="hero-ctas" style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
-              <a href="https://wa.me/5511999999999?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20BarberXP" className="btn-wa" target="_blank" rel="noopener noreferrer">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
-                Falar com a gente
+
+            {/* Primary CTA block */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem", marginBottom: "1.25rem" }}>
+
+              {/* WhatsApp — destaque principal */}
+              <a
+                href="https://wa.me/5511999999999?text=Ol%C3%A1!%20Quero%20saber%20mais%20sobre%20o%20BarberXP"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+                  background: "linear-gradient(135deg,#1DA851,#25D366 50%,#1DA851)",
+                  backgroundSize: "200% auto",
+                  color: "#fff",
+                  fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: "1rem",
+                  letterSpacing: "0.03em",
+                  padding: "0 2rem", height: 58, borderRadius: 14,
+                  textDecoration: "none",
+                  boxShadow: "0 8px 32px rgba(37,211,102,0.35), 0 0 0 1px rgba(37,211,102,0.2)",
+                  transition: "background-position 0.5s, transform 0.2s, box-shadow 0.3s",
+                  position: "relative", overflow: "hidden",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundPosition = "right center";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 14px 40px rgba(37,211,102,0.5), 0 0 0 1px rgba(37,211,102,0.3)";
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundPosition = "left center";
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 8px 32px rgba(37,211,102,0.35), 0 0 0 1px rgba(37,211,102,0.2)";
+                }}
+              >
+                {/* Pulse ring */}
+                <span style={{ position: "absolute", inset: 0, borderRadius: 14, border: "2px solid rgba(37,211,102,0.4)", animation: "ping 2s cubic-bezier(0,0,0.2,1) infinite", pointerEvents: "none" }} aria-hidden />
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                Falar pelo WhatsApp agora
+                <span style={{ marginLeft: "auto", fontSize: "0.72rem", fontWeight: 500, opacity: 0.8, background: "rgba(0,0,0,0.15)", borderRadius: 6, padding: "2px 8px" }}>Resposta rápida</span>
               </a>
-              <div className="ping-wrap">
-                <Link href="https://app.barberxp.com.br/auth/login" className="btn-gold">
-                  Testar 30 Dias Grátis
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+
+              {/* Secondary row */}
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <div className="ping-wrap" style={{ flex: 1 }}>
+                  <Link href="https://app.barberxp.com.br/auth/login" className="btn-gold" style={{ width: "100%", justifyContent: "center", height: 48 }}>
+                    Testar 30 Dias Grátis
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </Link>
+                </div>
+                <Link href="https://app.barberxp.com.br/auth/login" className="btn-outline" style={{ height: 48, padding: "0 1.25rem", flexShrink: 0, fontSize: "0.75rem" }}>
+                  Entrar
                 </Link>
               </div>
             </div>
-            <p style={{ marginTop: "1.5rem", color: "#3F3F46", fontSize: "0.75rem", letterSpacing: "0.04em" }}>
-              Sem cartão de crédito &nbsp;·&nbsp; Pronto em 2 minutos &nbsp;·&nbsp; Cancele quando quiser
+
+            <p style={{ color: "#3F3F46", fontSize: "0.72rem", letterSpacing: "0.04em" }}>
+              Sem cartão &nbsp;·&nbsp; Pronto em 2 min &nbsp;·&nbsp; Cancele quando quiser
             </p>
           </div>
 
-          {/* Dashboard screenshot */}
+          {/* Dashboard screenshot with tilt + parallax */}
           <div className="hide-m" style={{ position: "relative" }}>
-            {/* corner accents */}
+            {/* Corner accents */}
             {[{top:-16,right:-16,borderTop:"2px solid rgba(200,155,60,0.45)",borderRight:"2px solid rgba(200,155,60,0.45)",borderRadius:"0 12px 0 0"},{bottom:-16,left:-16,borderBottom:"2px solid rgba(200,155,60,0.45)",borderLeft:"2px solid rgba(200,155,60,0.45)",borderRadius:"0 0 0 12px"}].map((s,i) => (
-              <div key={i} aria-hidden style={{ position:"absolute",zIndex:2,width:72,height:72,pointerEvents:"none",...s }} />
+              <div key={i} aria-hidden style={{ position:"absolute",zIndex:3,width:72,height:72,pointerEvents:"none",...s }} />
             ))}
-            <div className="screen-frame">
-              <Image src="/assets/dashboard.png" alt="Dashboard BarberXP" width={660} height={440} style={{ width: "100%", height: "auto" }} priority />
-              <div aria-hidden style={{ position:"absolute",inset:0,background:"linear-gradient(90deg,rgba(10,10,10,0.45) 0%,transparent 40%)",pointerEvents:"none" }} />
-              <div aria-hidden style={{ position:"absolute",inset:0,background:"linear-gradient(to top,rgba(10,10,10,0.4) 0%,transparent 40%)",pointerEvents:"none" }} />
-            </div>
-            {/* Floating cards */}
-            <div className="float" style={{ position:"absolute",bottom:20,left:20,background:"rgba(8,8,8,0.9)",backdropFilter:"blur(16px)",border:"1px solid rgba(200,155,60,0.3)",borderRadius:14,padding:"14px 20px" }}>
+
+            {/* Gold particles */}
+            {[
+              {left:"15%",bottom:"10%","--dur":"3.2s","--delay":"0s","--dx":"12px"},
+              {left:"30%",bottom:"5%","--dur":"2.8s","--delay":"0.8s","--dx":"-8px"},
+              {left:"60%",bottom:"8%","--dur":"3.5s","--delay":"0.3s","--dx":"6px"},
+              {left:"75%",bottom:"12%","--dur":"2.5s","--delay":"1.2s","--dx":"-14px"},
+              {left:"45%",bottom:"3%","--dur":"4s","--delay":"0.6s","--dx":"10px"},
+            ].map((p,i)=>(
+              <div key={i} className="particle" style={p as React.CSSProperties} aria-hidden />
+            ))}
+
+            <TiltFrame style={{ borderRadius: 16 }}>
+              <div className="screen-frame" style={{
+                transform: `translate(${mouse.x * 0.4}px, ${mouse.y * 0.3}px)`,
+                transition: "transform 0.1s linear",
+              }}>
+                <Image src="/assets/dashboard.png" alt="Dashboard BarberXP" width={660} height={440} style={{ width: "100%", height: "auto", display:"block" }} priority />
+                <div aria-hidden style={{ position:"absolute",inset:0,background:"linear-gradient(90deg,rgba(10,10,10,0.4) 0%,transparent 40%)",pointerEvents:"none",zIndex:1 }} />
+                <div aria-hidden style={{ position:"absolute",inset:0,background:"linear-gradient(to top,rgba(10,10,10,0.4) 0%,transparent 40%)",pointerEvents:"none",zIndex:1 }} />
+              </div>
+            </TiltFrame>
+
+            {/* Floating cards with parallax offset */}
+            <div className="float" style={{ position:"absolute",bottom:20,left:20,zIndex:4,background:"rgba(8,8,8,0.9)",backdropFilter:"blur(16px)",border:"1px solid rgba(200,155,60,0.3)",borderRadius:14,padding:"14px 20px",transform:`translate(${mouse.x*0.8}px,${mouse.y*0.8}px)`,transition:"transform 0.08s linear" }}>
               <div className="d-font g-text" style={{ fontSize:"2rem",fontWeight:700,lineHeight:1 }}>+40%</div>
               <div style={{ color:"#71717A",fontSize:"0.65rem",letterSpacing:"0.08em",textTransform:"uppercase",marginTop:4 }}>faturamento médio</div>
             </div>
-            <div className="float" style={{ position:"absolute",top:20,right:20,animationDelay:"2s",background:"rgba(8,8,8,0.9)",backdropFilter:"blur(16px)",border:"1px solid rgba(200,155,60,0.18)",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:10 }}>
+            <div className="float" style={{ position:"absolute",top:20,right:20,animationDelay:"2s",zIndex:4,background:"rgba(8,8,8,0.9)",backdropFilter:"blur(16px)",border:"1px solid rgba(200,155,60,0.18)",borderRadius:14,padding:"12px 16px",display:"flex",alignItems:"center",gap:10,transform:`translate(${-mouse.x*0.6}px,${mouse.y*0.6}px)`,transition:"transform 0.08s linear" }}>
               <div style={{ display:"flex",gap:2 }}>{[...Array(5)].map((_,i)=><svg key={i} width="11" height="11" viewBox="0 0 24 24" fill="#C89B3C"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}</div>
               <div>
                 <div style={{ fontFamily:"var(--font-syne)",fontSize:"0.7rem",fontWeight:700 }}>98% satisfação</div>
@@ -597,7 +825,10 @@ export default function LandingPage() {
           <Reveal delay={0.1}>
             <div className="tab-strip" style={{ display: "flex", gap: "0.25rem", marginBottom: "2.5rem", borderBottom: "1px solid rgba(200,155,60,0.1)", paddingBottom: "0.5rem" }}>
               {TABS.map((t, i) => (
-                <button key={t.id} className={`tab-btn${activeTab === i ? " active" : ""}`} onClick={() => setActiveTab(i)}>{t.label}</button>
+                <button key={t.id} className={`tab-btn${activeTab === i ? " active" : ""}`} onClick={() => setActiveTab(i)} style={{ position: "relative" }}>
+                  {t.label}
+                  {activeTab === i && <div className="tab-progress" />}
+                </button>
               ))}
             </div>
           </Reveal>
@@ -605,7 +836,7 @@ export default function LandingPage() {
           {/* Tab content */}
           <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: "clamp(2rem,5vw,5rem)", alignItems: "center" }}>
             {/* Copy side */}
-            <div key={`copy-${activeTab}`} style={{ animation: "fade-in-up 0.5s cubic-bezier(0.22,1,0.36,1) both" }}>
+            <div key={`copy-${activeTab}`} className="tab-copy-enter">
               <style>{`@keyframes fade-in-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}`}</style>
               <div className="badge" style={{ marginBottom: "1.25rem" }}>
                 {["📅","📊","💰","📦","📱"][activeTab]} {TABS[activeTab].label}
@@ -622,19 +853,23 @@ export default function LandingPage() {
             </div>
 
             {/* Screenshot side */}
-            <div key={`img-${activeTab}`} style={{ position: "relative", animation: "fade-in-up 0.55s cubic-bezier(0.22,1,0.36,1) 0.05s both" }}>
+            <div key={`img-${activeTab}`} className="tab-img-enter" style={{ position: "relative" }}>
               {TABS[activeTab].isMobile ? (
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  <div aria-hidden style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 280, height: 280, background: "radial-gradient(ellipse,rgba(200,155,60,0.14) 0%,transparent 70%)", pointerEvents: "none" }} />
-                  <div className="screen-frame" style={{ maxWidth: 280, borderRadius: 24 }}>
-                    <Image src={TABS[activeTab].img} alt={TABS[activeTab].alt} width={280} height={500} style={{ width: "100%", height: "auto" }} />
-                  </div>
+                <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
+                  <div aria-hidden style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 280, height: 280, background: "radial-gradient(ellipse,rgba(200,155,60,0.16) 0%,transparent 70%)", pointerEvents: "none" }} />
+                  <TiltFrame style={{ maxWidth: 280, width: "100%", borderRadius: 28 }}>
+                    <div className="screen-frame" style={{ borderRadius: 28 }}>
+                      <Image src={TABS[activeTab].img} alt={TABS[activeTab].alt} width={280} height={500} style={{ width: "100%", height: "auto", display:"block" }} />
+                    </div>
+                  </TiltFrame>
                 </div>
               ) : (
-                <div className="screen-frame">
-                  <Image src={TABS[activeTab].img} alt={TABS[activeTab].alt} width={760} height={480} style={{ width: "100%", height: "auto" }} />
-                  <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,10,10,0.35) 0%,transparent 35%)", pointerEvents: "none" }} />
-                </div>
+                <TiltFrame style={{ borderRadius: 16 }}>
+                  <div className="screen-frame">
+                    <Image src={TABS[activeTab].img} alt={TABS[activeTab].alt} width={760} height={480} style={{ width: "100%", height: "auto", display:"block" }} />
+                    <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,10,10,0.3) 0%,transparent 35%)", pointerEvents: "none", zIndex:1 }} />
+                  </div>
+                </TiltFrame>
               )}
             </div>
           </div>
@@ -654,7 +889,7 @@ export default function LandingPage() {
           ].map((s, i) => (
             <div key={i} style={{ textAlign: "center", padding: "0 1rem", position: "relative" }}>
               {i > 0 && <div className="hide-m" style={{ position:"absolute",left:0,top:"15%",height:"70%",width:1,background:"linear-gradient(to bottom,transparent,rgba(200,155,60,0.25),transparent)" }} />}
-              <div className="d-font g-text" style={{ fontSize: "clamp(2.8rem,5vw,4.2rem)", fontWeight: 700, lineHeight: 1, marginBottom: "0.5rem" }}>
+              <div className={`d-font g-text${statsOn ? " stat-pop" : ""}`} style={{ fontSize: "clamp(2.8rem,5vw,4.2rem)", fontWeight: 700, lineHeight: 1, marginBottom: "0.5rem", animationDelay: `${i*0.12}s` }}>
                 {s.p}{s.v.toLocaleString("pt-BR")}{s.s}
               </div>
               <p style={{ color: "#71717A", fontSize: "0.8rem", letterSpacing: "0.04em" }}>{s.label}</p>
@@ -675,14 +910,16 @@ export default function LandingPage() {
               <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
                 <div aria-hidden style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 340, height: 340, background: "radial-gradient(ellipse,rgba(200,155,60,0.16) 0%,transparent 70%)", pointerEvents: "none" }} />
                 <div style={{ position: "relative", maxWidth: 300, width: "100%" }}>
-                  <div className="screen-frame" style={{ borderRadius: 28 }}>
-                    <Image src="/assets/celular.png" alt="App do cliente com XP e recompensas" width={300} height={540} style={{ width: "100%", height: "auto" }} />
-                  </div>
-                  <div className="float" style={{ position:"absolute",top:-20,right:-28,background:"rgba(8,8,8,0.92)",backdropFilter:"blur(14px)",border:"1px solid rgba(200,155,60,0.4)",borderRadius:14,padding:"12px 18px",textAlign:"center" }}>
+                  <TiltFrame style={{ borderRadius: 28 }}>
+                    <div className="screen-frame" style={{ borderRadius: 28 }}>
+                      <Image src="/assets/celular.png" alt="App do cliente com XP e recompensas" width={300} height={540} style={{ width: "100%", height: "auto", display:"block" }} />
+                    </div>
+                  </TiltFrame>
+                  <div className="float" style={{ position:"absolute",top:-20,right:-28,zIndex:4,background:"rgba(8,8,8,0.92)",backdropFilter:"blur(14px)",border:"1px solid rgba(200,155,60,0.4)",borderRadius:14,padding:"12px 18px",textAlign:"center" }}>
                     <div className="d-font g-text" style={{ fontSize:"1.6rem",fontWeight:700,lineHeight:1 }}>1.500</div>
                     <div style={{ color:"#71717A",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase" }}>XP PRATA</div>
                   </div>
-                  <div className="float" style={{ position:"absolute",bottom:-20,left:-28,animationDelay:"2s",background:"rgba(8,8,8,0.92)",backdropFilter:"blur(14px)",border:"1px solid rgba(200,155,60,0.28)",borderRadius:14,padding:"12px 18px" }}>
+                  <div className="float" style={{ position:"absolute",bottom:-20,left:-28,animationDelay:"2s",zIndex:4,background:"rgba(8,8,8,0.92)",backdropFilter:"blur(14px)",border:"1px solid rgba(200,155,60,0.28)",borderRadius:14,padding:"12px 18px" }}>
                     <div style={{ fontFamily:"var(--font-syne)",fontSize:"0.62rem",fontWeight:700,color:"#C89B3C",letterSpacing:"0.08em",textTransform:"uppercase" }}>Nível</div>
                     <div style={{ fontFamily:"var(--font-syne)",fontWeight:800,fontSize:"1.1rem",color:"#fff" }}>PRATA</div>
                   </div>
